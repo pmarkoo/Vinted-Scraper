@@ -16,7 +16,7 @@ if not os.path.exists('downloads'):
     os.makedirs('downloads')
 
 try:
-    os.mkdir(f"downloads/Avatars/")
+    os.mkdir("downloads/Avatars/")
 except OSError:
     print("Creation of the directory failed or the folder already exists ")
 
@@ -83,7 +83,7 @@ def download_vinted_data(userids, s):
                 photo = data['photo']['url']
                 photo_id = data['photo']['id']
                 try:
-                    os.mkdir(f"downloads/Avatars/")
+                    os.mkdir("downloads/Avatars/")
                 except OSError:
                     print ("Creation of the directory failed or the folder already exists ")
                 req = requests.get(photo)
@@ -100,11 +100,6 @@ def download_vinted_data(userids, s):
                     positive_feedback_count, negative_feedback_count, feedback_reputation, filepath, created_at,
                     last_loged_on_ts, city_id, city, country_title, verification_email, verification_google,
                     verification_facebook, verification_phone)
-                c.execute(
-                    "INSERT INTO Users(Username, User_id, Gender, Given_item_count, Taken_item_count, Followers_count, Following_count, Positive_feedback_count, Negative_feedback_count, Feedback_reputation, Avatar, Created_at, Last_loged_on_ts, City_id, City, Country_title, Verification_email, Verification_facebook, Verification_google, Verification_phone)VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    params)
-                conn.commit()
-
             else:
                 # If no avatar put empty string in DB
                 Avatar = ""
@@ -113,14 +108,14 @@ def download_vinted_data(userids, s):
                     positive_feedback_count, negative_feedback_count, feedback_reputation, Avatar, created_at,
                     last_loged_on_ts, city_id, city, country_title, verification_email, verification_google, verification_facebook,
                     verification_phone)
-                c.execute(
-                    "INSERT INTO Users(Username, User_id, Gender, Given_item_count, Taken_item_count, Followers_count, Following_count, Positive_feedback_count, Negative_feedback_count, Feedback_reputation, Avatar, Created_at, Last_loged_on_ts, City_id, City, Country_title, Verification_email, Verification_facebook, Verification_google, Verification_phone)VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    params)
-                conn.commit()
+            c.execute(
+                "INSERT INTO Users(Username, User_id, Gender, Given_item_count, Taken_item_count, Followers_count, Following_count, Positive_feedback_count, Negative_feedback_count, Feedback_reputation, Avatar, Created_at, Last_loged_on_ts, City_id, City, Country_title, Verification_email, Verification_facebook, Verification_google, Verification_phone)VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                params)
+            conn.commit()
 
             USER_ID = USER_ID.strip('\n')
             url = f'https://www.vinted.nl/api/v2/users/{USER_ID}/items?page=1&per_page=200000'
-            print('ID=' + str(USER_ID))
+            print(f'ID={str(USER_ID)}')
 
             r = s.get(url)
             jsonresponse = r.json()
@@ -128,47 +123,47 @@ def download_vinted_data(userids, s):
             products = jsonresponse['items']
             if products:
                 # Download all products
-                path= "downloads/" + str(USER_ID) +'/'
+                path = f"downloads/{str(USER_ID)}/"
                 try:
                     os.mkdir(path)
                 except OSError:
-                    print ("Creation of the directory %s failed or the folder already exists " % path)
+                    print(f"Creation of the directory {path} failed or the folder already exists ")
                 else:
-                    print ("Successfully created the directory %s " % path)
+                    print(f"Successfully created the directory {path} ")
                 for product in jsonresponse['items']:
-                        img = product['photos']
-                        ID = product['id']
-                        User_id = product['user_id']
-                        description = product['description']
-                        Gender = product['user']['gender']
-                        Category = product['catalog_id']
-                        size = product['size']
-                        State = product['status']
-                        Brand = product['brand']
-                        Colors = product['color1']
-                        Price = product['price']
-                        Images = product['photos']
-                        title = product['title']
-                        path= "downloads/" + str(User_id) +'/'
+                    img = product['photos']
+                    ID = product['id']
+                    User_id = product['user_id']
+                    description = product['description']
+                    Gender = product['user']['gender']
+                    Category = product['catalog_id']
+                    size = product['size']
+                    State = product['status']
+                    Brand = product['brand']
+                    Colors = product['color1']
+                    Price = product['price']
+                    Images = product['photos']
+                    title = product['title']
+                    path = f"downloads/{str(User_id)}/"
 
                         #print(img)
-                        if Images:
-                            for images in img:
-                                full_size_url = images['full_size_url']
-                                img_name = images['high_resolution']['id']
+                    if Images:
+                        for images in img:
+                            full_size_url = images['full_size_url']
+                            img_name = images['high_resolution']['id']
                                 #print(img_name)
-                                filepath = 'downloads/'+ str(USER_ID) +'/' + img_name +'.jpeg'
-                                if not os.path.isfile(filepath):
-                                    #print(full_size_url)
-                                    req = requests.get(full_size_url)
-                                    params = (ID, User_id, Gender, Category, size, State, Brand, Colors, Price, filepath, description, title, Platform)
-                                    c.execute("INSERT INTO Data(ID, User_id, Gender, Category, size, State, Brand, Colors, Price, Images, description, title, Platform)VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", params)
-                                    conn.commit()
-                                    with open(filepath, 'wb') as f:
-                                        f.write(req.content)
-                                    print(f"Image saved to {filepath}")
-                                else:
-                                    print('File already exists, skipped.')
+                            filepath = f'downloads/{str(USER_ID)}/{img_name}.jpeg'
+                            if not os.path.isfile(filepath):
+                                #print(full_size_url)
+                                req = requests.get(full_size_url)
+                                params = (ID, User_id, Gender, Category, size, State, Brand, Colors, Price, filepath, description, title, Platform)
+                                c.execute("INSERT INTO Data(ID, User_id, Gender, Category, size, State, Brand, Colors, Price, Images, description, title, Platform)VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", params)
+                                conn.commit()
+                                with open(filepath, 'wb') as f:
+                                    f.write(req.content)
+                                print(f"Image saved to {filepath}")
+                            else:
+                                print('File already exists, skipped.')
 
             if not products:
                 print('User has no products')
@@ -183,7 +178,6 @@ def download_depop_data(userids):
     for userid in userids:
         userid = userid.strip()
         print(userid)
-        slugs = []
         # Get userid from username
         url = f"https://webapi.depop.com/api/v1/shop/{userid}/"
         print(url)
@@ -211,7 +205,7 @@ def download_depop_data(userids):
             photo = data['picture']['300'][:-6] + "U0.jpg"
             print(photo)
             try:
-                os.mkdir(f"downloads/Avatars/")
+                os.mkdir("downloads/Avatars/")
             except OSError:
                 print("Creation of the directory failed or the folder already exists ")
             req = requests.get(photo)
@@ -233,11 +227,10 @@ def download_depop_data(userids):
         baseurl = f"https://webapi.depop.com/api/v1/shop/{id}/products/?limit=200"
         data = requests.get(baseurl).json()
         print("Fetching all produts...")
-        for i in data['products']:
-            slugs.append(i['slug'])
+        slugs = [i['slug'] for i in data['products']]
         while True:
 
-            url = baseurl + f"&offset_id={data['meta']['last_offset_id']}"
+            url = f"{baseurl}&offset_id={data['meta']['last_offset_id']}"
 
             print(url)
             try:
@@ -247,17 +240,16 @@ def download_depop_data(userids):
                 print(requests.get(url).text)
                 exit()
                 break
-            for i in data['products']:
-                slugs.append(i['slug'])
+            slugs.extend(i['slug'] for i in data['products'])
             if data['meta']['end'] == True:
                 print("Got all products. Start Downloading...")
                 break
         print(len(slugs))
-        path = "downloads/" + str(userid) + '/'
+        path = f"downloads/{str(userid)}/"
         try:
             os.mkdir(path)
         except OSError:
-            print("Creation of the directory %s failed or the folder already exists " % path)
+            print(f"Creation of the directory {path} failed or the folder already exists ")
         for slug in slugs:
             url = f"https://webapi.depop.com/api/v2/product/{slug}"
             #print(url)
@@ -265,8 +257,6 @@ def download_depop_data(userids):
                 product_data = requests.get(url).json()
             except ValueError:
                 print("Error decoding JSON data. Skipping...")
-                pass
-
             product_id = product_data['id']
             try:
                 Gender = product_data['gender']
@@ -286,8 +276,7 @@ def download_depop_data(userids):
             Colors = []
             # Get colors if available
             try:
-                for color in product_data['colour']:
-                    Colors.append(color['name'])
+                Colors.extend(color['name'] for color in product_data['colour'])
             except KeyError:
                 pass
 
@@ -299,8 +288,7 @@ def download_depop_data(userids):
             sizes = []
             # Get size if available
             try:
-                for size in product_data['sizes']:
-                    sizes.append(size['name'])
+                sizes.extend(size['name'] for size in product_data['sizes'])
             except KeyError:
                 pass
 
@@ -311,7 +299,7 @@ def download_depop_data(userids):
                     full_size_url = i['url']
                     img_name = i['id']
                 print(img_name)
-                filepath = 'downloads/' + str(userid) + '/' + str(img_name) + '.jpg'
+                filepath = f'downloads/{str(userid)}/{str(img_name)}.jpg'
                 if not os.path.isfile(filepath):
                     print(full_size_url)
                     req = requests.get(full_size_url)
